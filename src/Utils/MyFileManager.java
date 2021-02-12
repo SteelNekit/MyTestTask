@@ -13,6 +13,7 @@ import java.util.Scanner;
 public class MyFileManager {
     private String pageURL;
     private File targetFile;
+    private final Chronicler chronicler = new Chronicler();
 
     public MyFileManager(){
         setPageURL();
@@ -43,12 +44,14 @@ public class MyFileManager {
         try{
             FileWriter writer = new FileWriter(targetFile);
             Document document = Jsoup.connect(pageURL).get();
+            chronicler.writeAboutWebPage(pageURL);
             writer.write(document.toString());
             writer.close();
         }catch (IOException e){
             System.out.println(e.getMessage());
-            System.out.println("Возникли прблемы с файлом для записи или вы указали неверный адресс страницы");
+            System.out.println("Возникли проблемы с файлом для записи или вы указали неверный адрес страницы");
             System.out.println("Выполняется закрытие программы");
+            chronicler.writeAboutWebPageTroubles(pageURL,targetFile.getAbsolutePath());
             System.exit(0);
         }
 
@@ -57,7 +60,9 @@ public class MyFileManager {
     public void doYourJob() throws IOException {
         Document document = Jsoup.parse(targetFile,"UTF-8");
         Map<String,Integer> words = StringWorker.getWordsStatistics(document.text());
+        chronicler.writeAboutJob();
         sendMapToDatabase(words);
+        chronicler.writeAboutDatabase();
         for (Map.Entry<String,Integer> pair:words.entrySet()){
             System.out.println(pair.getKey()+" - "+pair.getValue());
         }

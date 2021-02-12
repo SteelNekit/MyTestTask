@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.Map;
 
 public class DatabaseWorker {
+    private static final Chronicler chronicler = new Chronicler();
     public static final String CONNECTION_URL = "jdbc:sqlite:Database/words.db";
 
     private static Connection getConnection(){
@@ -13,6 +14,7 @@ public class DatabaseWorker {
             System.out.println(e.getMessage());
             System.out.println("Возникла ошибка при установке соединения");
             System.out.println("Соединение не может быть установлено");
+            chronicler.writeAboutDatabaseConnectionError();
             return null;
         }
     }
@@ -31,11 +33,13 @@ public class DatabaseWorker {
             System.out.println(e.getMessage());
             System.out.println("Возникли проблемы с добавлением элемента:");
             System.out.println(word+" "+count+" "+website);
+            chronicler.writeAboutDatabaseAppendError(word,count,website);
         }
     }
 
     public static void appendWordToDatabase(Map<String,Integer> words, String website){
         Connection connection = getConnection();
+        chronicler.writeAboutDatabaseConnection();
         try{
             Statement statement = connection.createStatement();
             for(Map.Entry<String,Integer> pair:words.entrySet()){
@@ -47,7 +51,8 @@ public class DatabaseWorker {
             connection.close();
         }catch (SQLException e){
             System.out.println(e.getMessage());
-            System.out.println("Возникли проблемы с добавлением элемента из списка'");
+            System.out.println("Возникли проблемы с добавлением элемента из списка");
+            chronicler.writeAboutDatabaseAppendError();
         }
     }
 
